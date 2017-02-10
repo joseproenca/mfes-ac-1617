@@ -2,4 +2,5 @@
 
 Material for the course "Arquitectura e Cálculo", a master course unit in University of Minho.
 
-Check the official website: [http://wiki.di.uminho.pt/twiki/bin/view/Education/MFES/AC]
+Check the official website:
+http://wiki.di.uminho.pt/twiki/bin/view/Education/MFES/AC.
