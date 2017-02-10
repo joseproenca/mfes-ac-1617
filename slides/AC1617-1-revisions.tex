@@ -1,0 +1,200 @@
+\documentclass{beamer}
+
+\input{macros/beamerconf}
+\input{macros/preamble}
+\input{macros/macros}
+
+%----------------------------------------------------------------------------
+\usepackage{graphicx,amsmath}
+\usepackage{stmaryrd} % cf. interleave
+%\usepackage{./macros/myisolatin1}
+
+\usepackage{amscd}
+%------ using xy ------------------------------------------------------------
+\usepackage{alltt}
+%------ using xy ------------------------------------------------------------
+\usepackage[all]{xy}
+%\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _-{#2} }}
+\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _--{#2} }}
+\def\rarrow#1#2#3{\xymatrix{ #1 \ar[r]^-{#2} & #3 }}
+\def\arLaw#1#2#3#4#5{
+\xymatrix{
+        #1      \ar@/^1pc/[rr]^-{#4} &
+        #5 &
+        #2      \ar@/^1pc/[ll]^-{#3}
+}}
+\def\arLeq#1#2#3#4{\arLaw{#1}{#2}{#3}{#4}\leq}
+%------ using pstricks (rnode etc) ------------------------------------------
+%\usepackage{pstricks,pst-node,pst-text,pst-3d}
+
+
+
+\def\laplace#1#2{*\txt{\mbox{ \fcolorbox{black}{myGray}{$\begin{array}{c}\mbox{#1}\\\\#2\\\\\end{array}$} }}}
+
+\def\SING{\ensuremath{\boldsymbol{1}}}
+\def\para{\mathbin{\boxtimes}}   % Mealy produto (sincrono)
+\def\parc{\mathbin{\boxplus}}    % Mealy soma
+\def\pars{\mathbin{\boxast}}     % Mealy misto
+\def\shk#1#2{\bigl(#1\bigr)_{#2}}            % separated hook direita
+\def\hk#1#2{#1\! \Lsh_{#2}}            % hook direita
+\def\hkespaco#1#2{#1 \Lsh_{#2}}            % hook direita
+%\def\feed#1{\Bigl( #1 \Bigr)\! \Lsh}            % hook direita
+\def\feed#1{#1 \Lsh}            % hook direita
+\def\kh#1#2{~_{#2}(#1)}           % hook esquerda
+
+\def\flift#1{\ulcorner #1 \urcorner}           % funcoes embb
+\def\singr#1{\lfloor #1 \rceil}
+
+\def\pdiag{\bigtriangleup}      % diagonal em componentes
+\def\pcodiag{\bigtriangledown}    % codiagonal em componentes
+
+\def\qcomp{\mathbin{\boldsymbol{;}}}
+\def\qcom#1#2{#1\qcomp#2}
+\def\sync{}
+
+
+
+\title{
+	Software architecture for reactive systems: \\
+  A short look at model checking (revisions)
+	}
+\author{Jos\'{e} Proen\c{c}a}
+\institute{HASLab - INESC TEC \\ Universidade do Minho\\ Braga, Portugal}
+
+\date{
+\begin{tabular}{c}
+\\
+    February  2017
+\end{tabular}
+}
+
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\section{Ideas}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Model checking}
+  Recall ``Especificação e Modelação'':
+  \begin{itemize}
+  \item \red{Modelling} reactive systems -- \blue{Kripke structures} and
+      \begin{tabular}[t]{@{}l@{}}\blue{\sout{Petri Nets}}\\\blue{SMV}\end{tabular}
+  \item \red{Specification} -- Temporal logics (\blue{LTL} \sout{and CTL/CTL$^{*}$})
+  \item \red{Verification} -- Check if a formula holds in a system 
+  \end{itemize}
+
+  ~\\[5mm]
+  \myblock{SMV model checker}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{What we will see}
+  \begin{itemize}
+    \item \blue{Labelled transition systems (LTS)} as Kripke structures\\
+    \begin{itemize}
+      \item \blue{Process algebra} (not \sout{Petri Nets} SMV) to define LTS
+      \item \red{mCRL2} toolset to model (not SMV)
+      \item Equivalence of LTS
+    \end{itemize}
+    \item \blue{Modal logics} -- generalising temporal logics (CTL$^{*}$,CTL,LTL)
+    \item Using \red{mCRL2} toolset to \blue{verify} properties
+  \end{itemize}
+  ~\\[5mm]
+  \begin{itemize}
+    \item Later: \blue{Timed-automata} and \red{UPPAAL} model checker (CTL)\\
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Model}
+  \myblock{$\ger{M}, w ~\models~ \phi$  ~~--~~what does it mean? }
+  \begin{block}{Model definition}
+    A \dkb{model} for the language is a pair $\dkb{\ger{M}} = \pair{\ger{F},V}$, where
+    \begin{itemize}
+    \item $\ger{F} = \pair{\dgold{W}, \enset{\alert{R_m}}_{m \in \mathsf{MOD}}}$  \\ is a \dkb{Kripke frame}, ie, a non empty set \dgold{$W$} and a family \alert{$R_m$} of \alert{binary relations} (called \emph{accessibility relations})
+    over \dgold{$W$}, one for each modality symbol $m \in \mathsf{MOD}$. Elements of \dgold{$W$} are called \dgold{points},  \dgold{states},  \dgold{worlds} or
+    simply  \dgold{vertices} in  directed graphs. 
+    \item $\fdec{V}{\mathsf{PROP}}{\pow{(W)}}$ is a \dkb{valuation}.
+    \end{itemize}
+  \end{block}
+
+  \begin{exampleblock}{Kripke structures from last semester}
+  \begin{itemize}
+    \item MOD = $\set{\textbf{1}}$
+    \item $(S, I, R, L)$ ~~where~~ $S=W$, $I=\set{w}$, $R=R_{\textbf{1}}$, $L =V$
+    \item \dgold{$\ger{F} = \pair{W,R}$} ~~instead of~~
+          \dkb{$\ger{F} = \pair{{W}, \enset{{R_m}}_{m \in \mathsf{MOD}}}$}
+  \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%
+\begin{frame}{Example}
+  \centering
+  $\ger{M} = \wrap{\xymatrix{
+  & 1^{p}  \ar[ld]_{\blue a}  \ar[rd]^{\blue a}\\
+  2^{q} \ar[rr]^{\blue b}  && 3^{p,q} \ar@(ur,dr)[]^{\blue b}
+  }}$
+  \\[5mm]
+  \begin{columns}
+    \column{.45\textwidth}
+    \begin{align*}
+      W =& \set{1,2,3}\\
+      MOD =& \set{\blue{a},\blue b}\\
+      R_{\blue a} =& \set{(1,2),(1,3)}\\
+      R_{\blue b} =& \set{(2,3),(3,3)}\\
+      V =& \{1\mapsto \set{p},\\
+         & ~\, 2\mapsto \set{q},\\
+         & ~\, 3\mapsto \set{p,q}\}
+    \end{align*}
+    \column{.45\textwidth}
+    \begin{itemize}
+      \item \red{$\ger{M},1 ~\models~ p$}\\
+      means $p$ holds in state 1
+      \item \red{$\ger{M},2 ~\models~ [b]\,p$}\\
+      means $p$ holds in every state reachable with $b$ from 2.
+    \end{itemize}
+  \end{columns}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%
+\begin{frame}{Key differences}
+  \begin{block}{Before}
+    \begin{columns}
+      \column{.40\textwidth}\centering
+      $\wrap{\xymatrix{
+        & 1^{\red p}  \ar[ld]  \ar[rd]\\
+        2^{\red q} \ar[rr]  && 3^{\red{p,q}} \ar@(ur,dr)[]
+        }}$
+      \column{.56\textwidth}
+      \begin{itemize}
+        \item emphasize on \blue{states} - desired/forbidden states
+        \item \blue{Petri nets} to generate models
+        \item $\ger{M},1 ~\models~ \red{p}$
+      \end{itemize}
+    \end{columns}
+  \end{block}
+%
+  \begin{block}{Now}
+    \begin{columns}
+      \column{.40\textwidth}\centering
+      $\wrap{\xymatrix{
+          & 1  \ar[ld]_{\red a}  \ar[rd]^{\red a}\\
+          2 \ar[rr]^{\red b}  && 3 \ar@(ur,dr)[]^{\red b}
+        }}$
+      \column{.56\textwidth}
+      \begin{itemize}
+        \item emphasize on \blue{actions} - desired/forbidden sequences
+        \item \blue{Process algebra} to generate models
+        \item $\ger{M},2 ~\models~ \red{[a]}\,\text{false}$
+      \end{itemize}
+    \end{columns}    
+  \end{block}
+\end{frame}
+
+
+\end{document}
