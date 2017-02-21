@@ -1,0 +1,766 @@
+%\documentclass[handout]{beamer}
+\documentclass{beamer}
+\usepackage{etex} % fixes new-dimension error
+
+\input{macros/beamerconf}
+\input{macros/preamble}
+\input{macros/macros}
+
+%----------------------------------------------------------------------------
+\usepackage{graphicx,amsmath}
+\usepackage{stmaryrd} % cf. interleave
+%\usepackage{./macros/myisolatin1}
+%\usepackage{/Users/lsb/Library/tex/latex/prooftree}
+\usepackage{amscd}
+%------ using xy ------------------------------------------------------------
+\usepackage{alltt}
+%------ using xy ------------------------------------------------------------
+\usepackage[all]{xy}
+%\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _-{#2} }}
+\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _--{#2} }}
+\def\rarrow#1#2#3{\xymatrix{ #1 \ar[r]^-{#2} & #3 }}
+\def\arLaw#1#2#3#4#5{
+\xymatrix{
+        #1      \ar@/^1pc/[rr]^-{#4} &
+        #5 &
+        #2      \ar@/^1pc/[ll]^-{#3}
+}}
+\def\arLeq#1#2#3#4{\arLaw{#1}{#2}{#3}{#4}\leq}
+%------ using pstricks (rnode etc) ------------------------------------------
+\usepackage{pstricks,pst-node,pst-text,pst-3d}
+%------ using color ---------------------------------------------------------
+\newrgbcolor{goldenrod}{.80392 .60784 .11373}
+\newrgbcolor{darkgoldenrod}{.5451 .39608 .03137}
+\newrgbcolor{brown}{.15 .15 .15}
+\newrgbcolor{darkolivegreen}{.33333 .41961 .18431}
+%
+%
+\def\gold#1{{\goldenrod #1}}
+\def\dgold#1{{\darkgoldenrod #1}}
+%\def\brw#1{{\brown #1}}
+\def\dkb#1{{\blue #1}}
+\def\tdkb#1{\textbf{\darkblue #1}}
+%%\def\gre#1{{\green #1}}
+\def\gre#1{{\darkolivegreen #1}}
+\def\gry#1{{\gray #1}}
+\def\rdb#1{{\red #1}}
+\def\st{\mathbf{.}\,}
+\def\laplace#1#2{*\txt{\mbox{ \fcolorbox{black}{myGray}{$\begin{array}{c}\mbox{#1}\\\\#2\\\\\end{array}$} }}}
+%\newcommand{\galois}[2]{#1\; \dashv\; #2}
+
+\def\eqm{\mathbin{\equiv}}                     
+\def\noeqm{\mathbin{\not\!\equiv}}  
+%\newcommand{\flam}[2]{\lambda_{#1}\; .\; #2}
+\def\existential#1#2{\exists_{#1}\;.\; #2}
+\def\existencial#1#2{\exists_{#1}\;.\; #2}
+
+\def\pv#1#2{\langle #1 \rangle #2}
+\def\nc#1#2{[#1]#2}
+\def\pvo#1#2{\langle \! \! \! \langle #1 \rangle \! \! \! \rangle\, #2}
+\def\nco#1#2{\llbracket #1 \rrbracket #2}
+\def\cvg#1{\llbracket \downarrow \rrbracket #1}
+\def\cvgr#1#2{\llbracket #1 \downarrow \rrbracket #2}
+\def\cvgl#1#2{\llbracket \downarrow  #1 \rrbracket #2}
+\def\cvglr#1#2{\llbracket \downarrow  #1 \downarrow \rrbracket #2}
+\def\lfp#1#2{\mu {#1}\, .\, {#2}}
+\def\lpf#1#2{\mu {#1}\, .\, {#2}}
+\def\gfp#1#2{\nu {#1}\, .\, {#2}}
+\def\gpf#1#2{\nu {#1}\, .\, {#2}}
+\def\mset#1{\vvv #1 \vvv}
+\def\vvv{\vert \! \vert}
+\def\mnc#1{\vvv [#1] \vvv}
+\def\mpv#1{\vvv \langle #1 \rangle \vvv}
+\def\bcomp#1{#1^{\text{c}}}
+\def\eqm{\mathbin{\simeq}}
+\def\noeqm{\mathbin{\not\!\simeq}}
+\def\universal#1#2{\forall_{#1}\;.\; #2}
+\def\existential#1#2{\exists_{#1}\;.\; #2}
+\def\oexistential#1#2{\exists^{1}_{#1}\;.\; #2}
+\def\MM{\mathcal{M}}
+\def\uppaal{\textsc{Uppaal}}
+\def\cc#1{\mathcal{C}(#1)}
+\def\R{\mathcal{R}}
+\def\TL#1{\mathcal{T}(#1)}
+\def\ET#1{\mathsf{ExecTime(#1)}}
+
+
+%\input{./macros/LSBslides-mac}
+%\input{LSBslides1.tex}
+\title{
+	Time-critical reactive systems\\ (verification)	}
+\author{Jos\'e Proen\c{c}a}
+\institute{HASLab - INESC TEC \\ Universidade do Minho\\ Braga, Portugal}
+
+\date{
+\begin{tabular}{c}
+\\
+  April/May  2017
+\end{tabular}
+
+}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+
+
+
+\section{Behavioural equivalences}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Traces}
+\small
+
+\begin{block}{Definition}
+A \dkb{timed trace} over a \dgold{timed LTS} is a (finite or infinite) sequence  $\pair{t_1,a_1}, \pair{t_2,a_2}, \cdots$ in
+ $\R^+_0 \times Act$ such that there exists a path
+\begin{equation*}
+\pair{l_0,\eta_0}  \tran{d_1}   \pair{l_0,\eta_1}    \tran{a_1}     \pair{l_1,\eta_2}    \tran{d_2}    \pair{l_1,\eta_3}   \tran{a_2} \cdots 
+\end{equation*}
+such that 
+\begin{equation*}
+t_{i} = t_{i-1} + d_i
+\end{equation*}
+with $t_0=0$ and, for all clock $x$, $\eta_0\, x = 0$.
+\end{block}
+~\\
+
+Intuitively, each $t_i$ is an absolute time value acting as a \dgold{time-stamp}.
+
+\begin{alertblock}{Warning}
+All results from now on are given over an arbitrary \dgold{timed LTS}; they naturally apply to $\TL{ta}$ for any timed automata $ta$.
+\end{alertblock}
+\end{slide}
+
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Traces}
+\begin{exampleblock}{Write possible traces}
+  \centering
+  \includegraphics[width=7cm]{./images/lamp1.jpg}
+\end{exampleblock}
+\end{frame}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Traces}
+\small
+
+Given a \dgold{timed trace} $tc$, the corresponding \dkb{untimed trace} is $(\pi_2)^{\omega}\,  tc$.
+
+\begin{block}{Definition}
+\begin{itemize}
+\item two states $s_1$ and $s_2$ of a timed LTS are \dkb{timed-language equivalent} if the \dgold{set of finite timed traces}
+of  $s_1$ and $s_2$ coincide;
+\item ... similar definition for \dkb{untimed-language equivalent} ...
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Example}
+\begin{tabular}{cc}
+ \includegraphics[width=2cm]{./images/tr1.jpg} &   %\hspace{1cm}
+  \includegraphics[width=2cm]{./images/tr2.jpg}
+\end{tabular}
+are not \dkb{timed-language equivalent}
+\\
+\visible<2>{$\pair{(0,t)}$ is not a trace of the TLTS generated by the second system.}
+\end{exampleblock}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Bisimulation}
+\small
+
+\begin{block}{Timed bisimulation (between states of timed LTS)}
+A relation $R$ is a \dkb{timed simulation} iff whenever $s_1 R s_2$, for any action $a$ and delay $d$,
+\begin{align*}
+s_1\tran{a} s_1'\; & \imp\; \text{there is a transition}\; \; \; s_2 \tran{a} s_2' \e s_1' R s_2'\\
+s_1 \tran{d} s_1'\; & \imp\; \text{there is a transition}\; \; \; s_2 \tran{d} s_2' \e s_1' R s_2'
+\end{align*}
+And a \dkb{timed bisimulation} if its converse is also a timed simulation.
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Bisimulation}
+\small
+
+\begin{exampleblock}{Example}
+\centering
+\wrap{\includegraphics[width=6cm]{./images/bis1.jpg}}
+~~~~
+\wrap{W1 bisimilar to Z1?}
+\end{exampleblock}
+
+\visible<2>{
+\begin{align*}
+\pair{\pair{W1,\{x\mapsto 0\}}, \pair{Z1,\{x\mapsto 0\}} } \in R
+\end{align*}
+where
+\[\begin{array}{rlll}
+R \; =\;  & \{\pair{\pair{W1,\{x\mapsto d\}}&, \pair{Z1,\{x\mapsto d\}} } &|~d \in \R_0^+\}\; \;   \cup\\
+              & \{\pair{\pair{W2,\{x\mapsto d+1\}}&, \pair{Z2,\{x\mapsto d\}} } &|~ d \in \R_0^+\}\; \;  \cup\\
+              & \{\pair{\pair{W3,\{x\mapsto d\}}&, \pair{Z3,\{x\mapsto e\}} } &|~d,e \in \R_0^+\}  
+\end{array}\]
+}
+
+
+\end{slide}
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Untimed Bisimulation}
+\small
+
+\begin{block}{Untimed bisimulation}
+A relation $R$ is an \dkb{untimed simulation} iff whenever $s_1 R s_2$, for any action $a$ and delay $t$,
+\begin{align*}
+s_1 \tran{a} s_1' \; & \imp\; \text{there is a transition}\; \; \; s_2 \tran{a} s_2' \e s_1' R s_2'\\
+s_1 \tran{{\red{d}}} s_1'\; & \imp\; \text{there is a transition}\; \; \; s_2 \tran{{\red{d'}}} s_2' \e s_1' R s_2'
+\end{align*}
+And it is an \dkb{untimed bisimulation} if its converse is also an untimed simulation.
+\end{block}
+~\\
+
+
+\dgold{Alternatively, it can be defined over a modified LTS in which all delays are abstracted on a 
+unique, special transition labelled by $\epsilon$.}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Untimed Bisimulation}
+\small
+
+\begin{exampleblock}{Example}
+\centering
+\wrap{\includegraphics[height=3cm]{./images/bis2}}
+~~~~
+\wrap{W1 bisimilar to Z1?}
+\end{exampleblock}
+
+\visible<2>{
+\begin{align*}
+\pair{\pair{W1,\{x\mapsto 0\}}, \pair{Z1,\{x\mapsto 0\}} } \in R
+\end{align*}
+where
+\[\begin{array}{r@{~}l@{~}l@{~}l}
+R \; =\;  & \{\pair{\pair{W1,\{x\mapsto d\}}&, \pair{Z1,\{x\mapsto d'\}} } &|~0\leq d \leq 1 , 0 \leq d' \leq 2 \}\; \;   \cup\\
+              & \{\pair{\pair{W1,\{x\mapsto d\}}&, \pair{Z1,\{x\mapsto d'\}} } &|~ d>1, d'>2\}\; \;  \cup\\
+              & \{\pair{\pair{W2,\{x\mapsto d\}}&, \pair{Z2,\{x\mapsto d'\}} } &|~d,d' \in \R_0^+\}  
+\end{array}\]
+}
+
+
+\end{slide}
+
+
+\section{Behavioural properties}
+%----------------------------------------------------------------------------------
+\begin{slide}{Properties: expression and satisfaction}
+\small
+\begin{block}{The satisfaction problem }
+Given a \dgold{timed automata}, $ta$, and a \dkb{property}, $\phi$, show that
+\begin{equation*}
+\TL{ta} \models \phi
+\end{equation*}
+\end{block}
+~\\
+
+\pause
+\begin{itemize}
+\item in which logic language shall $\phi$ be specified?
+\item how is $\models$ defined?
+\end{itemize}
+\end{slide}
+
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Expressing properties: \textsc{Uppaal}}
+\small
+
+\begin{block}{\textsc{Uppaal} variant of \textsc{Ctl}}
+\begin{itemize}
+\item \dkb{state formulae}:  describes individual states in $\TL{ta}$
+\item \dkb{path formulae}: describes properties of paths in $\TL{ta}$
+\end{itemize}
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Expressing properties: \textsc{Uppaal}}
+\small
+
+\begin{block}{State formulae}
+Any expression which can be evaluated to a boolean value for a state (typically involving the 
+\dgold{clock constraints} used for guards and invariants and similar constraints over integer variables):
+\begin{center}
+\texttt{x >= 8}, \texttt{i == 8 and x < 2}, ...
+\end{center}
+Additionally,
+\begin{itemize}
+\item \dkb{$ta.\ell$} which tests \dgold{current location}:  $(\ell, \eta) \models ta.\ell$ \\
+provided $(\ell, \eta)$ is a state in $\TL{ta}$
+\item \dkb{$\texttt{deadlock}$}: $(\ell, \eta) \models \forall_{d \in \R_0^+} .\, \text{there is no transition from} \; \pair{\ell,\eta+d}$ 
+\end{itemize}
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Expressing properties: \textsc{Uppaal}}
+\small
+
+\newcommand{\Boxc}{\dgold{\Box}}
+\newcommand{\Diamondc}{\dgold{\Diamond}}
+\newcommand{\Ac}{\dkb{A}}
+\newcommand{\Ec}{\dkb{E}}
+
+\begin{block}{Path formulae}
+\begin{align*}
+\Pi\; ::=\; & \Ac \Boxc\, \Psi\, \mid\, \Ac\Diamondc\, \Psi\, \mid\, \Ec \Boxc\, \Psi\, \mid\, \Ec \Diamondc\, \Psi\, \mid\, \Phi \leadsto  \Psi\
+\\[2mm]
+\Psi\; ::=\; & ta.\ell ~|~ g_c ~|~ {\transp{g_d}} ~|~ \texttt{not~}\Psi ~|~ \Psi \texttt{ or }\Psi ~|~ \Psi \texttt{ and }\Psi ~|~ \Psi \texttt{ imply }\Psi
+\end{align*}
+
+where
+\begin{itemize}
+\item \dkb{$A$, $E$} quantify (universally and existentially, resp.) over \dkb{paths}
+\item \dgold{$\Box$, $\Diamond$} quantify (universally and existentially, resp.) over \dgold{states in a path}
+\end{itemize}
+also notice that
+
+\begin{align*}
+ \Phi \leadsto  \Psi\; \abv\; \Ac \Boxc\, (\Phi \imp \Ac \Diamondc\, \Psi)
+\end{align*}
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Expressing properties: \textsc{Uppaal}}
+\small
+
+\begin{block}{$A \Box\, \varphi$ and $A \Diamond \, \varphi$}
+\begin{tabular}{cc}
+ \includegraphics[width=3cm]{./images/AA.jpg} &   \hspace{1cm} \includegraphics[width=3cm]{./images/AE.jpg}
+\end{tabular}
+\end{block}
+
+\begin{block}{$E \Box\, \varphi$ and $E \Diamond\, \varphi$}
+\begin{tabular}{cc}
+ \includegraphics[width=3cm]{./images/EA.jpg} &   \hspace{1cm} \includegraphics[width=3cm]{./images/EE.jpg}
+\end{tabular}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Expressing properties: \textsc{Uppaal}}
+\small
+
+\begin{block}{$\varphi\, \leadsto\, \psi$}
+\begin{center}
+ \includegraphics[width=5cm]{./images/LeadsTo.jpg} 
+ \end{center}
+\end{block}
+
+\begin{exampleblock}{Example}
+  If a message is sent, it will eventually be received -- $\texttt{send(m)} \leadsto \texttt{received(m)}$
+\end{exampleblock}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Reachability properties}
+\small
+
+\begin{block}{$E \Diamond\, \phi$}
+\dkb{Is there a path starting at the initial state, such that a state formula $\phi$ is eventually satisfied?}
+
+\begin{itemize}
+\item  Often used to perform sanity checks  on a model:
+\begin{itemize}
+\item \dgold{is it possible for a sender to send a message?}
+ \item \dgold{can a message possibly be received?}
+ \item ...
+ \end{itemize}
+ \item  Do not by themselves guarantee the correctness of the protocol (i.e. \dgold{that any message is eventually delivered}), 
+but they validate the basic behavior of the model.
+ \end{itemize}
+\end{block}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Safety properties}
+\small
+
+\begin{block}{$A \Box\, \phi$ and $E \Box\, \phi$}
+\vspace{5mm}
+\dkb{Something bad will never happen}\\
+ or \dkb{something bad will possibly never happen}
+\vspace{5mm}
+
+Examples\\
+\begin{itemize}
+\item \dgold{In a nuclear power plant the temperature of the core is always (invariantly) under a certain threshold}.
+\item \dgold{In a game a safe state is one in which we can still win, ie, will possibly not loose}.
+\end{itemize}
+
+In Uppaal these properties are formulated positively: something good is invariantly true.
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Liveness properties}
+\small
+
+\begin{block}{$A \Diamond\, \phi$ and $\phi\, \leadsto \, \psi$}
+\vspace{5mm}
+\dkb{Something good will \emph{eventually happen}}\\
+ or \dkb{if \emph{something} happens, then \emph{something else} will eventually happen!}
+\vspace{5mm}
+
+Examples\\
+\begin{itemize}
+\item \dgold{When pressing the on button, then eventually the television should turn on}.
+\item \dgold{In a communication protocol, any message that has been sent should eventually be received}.
+\end{itemize}
+
+\end{block}
+
+\end{slide}
+
+
+
+%\end{document}
+
+
+
+\section{Case-study: proving mutual exclusion}
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{The train gate example}
+\small
+
+\begin{center}
+\includegraphics[width=4cm]{./images/tg1.jpg} 
+\end{center}
+
+\begin{itemize}
+\item \texttt{E<> Train(0).Cross} 
+\\ \dkb{(Train 0 can reach the cross)}
+\item \texttt{E<> Train(0).Cross and Train(1).Stop}
+\\ \dkb{(Train 0 can be crossing bridge while Train 1 is waiting to cross)}
+\item \texttt{E<> Train(0).Cross and}\\
+  \texttt{~~~~~~~(forall (i:id-t) i != 0 imply Train(i).Stop)}
+\\ \dkb{(Train 0 can cross bridge while the other trains are waiting to cross)}
+\end{itemize}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{The train gate example}
+\small
+
+\begin{center}
+\includegraphics[width=3cm]{./images/tg1.jpg} 
+\end{center}
+
+
+\begin{itemize}
+\item \texttt{A[] Gate.list[N] == 0}
+\\ \dkb{There can never be N elements in the queue}
+\item \texttt{A[] forall (i:id-t) forall (j:id-t) Train(i).Cross \&\& Train(j).Cross imply i == j}
+\\ \dkb{There is never more than one train crossing the bridge}
+\item \texttt{Train(1).Appr --> Train(1).Cross}
+\\ \dkb{Whenever a train approaches the bridge, it will eventually cross}
+\item \texttt{A[] not deadlock}
+\\ \dkb{The system is deadlock-free}
+\end{itemize}
+
+
+\end{slide}
+
+
+
+%%----------------------------------------------------------------------------------
+%\begin{slide}{The train gate example}
+%\small
+%
+%\begin{center}
+%\includegraphics[width=5cm]{./images/tg2.jpg} 
+%\end{center}
+%
+%\begin{itemize}
+%\item Note the use of parameters and the select clause on transitions
+%\item Programming ...
+%\end{itemize}
+%
+%\end{slide}
+
+
+
+
+
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Demo}
+%\small
+%
+%
+%\begin{itemize}
+%\item The \dgold{train gate} case study (included in the \textsc{Uppaal} distribution).
+%\end{itemize}
+%
+%\end{slide}
+%
+%
+
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Mutual exclusion}
+\small
+
+\begin{block}{Properties}
+\begin{itemize}
+\item \dkb{mutual exclusion}: \dgold{no two processes are in their critical sections at the same time}
+\item \dkb{deadlock freedom}: \dgold{if some process is trying to access its critical section, then 
+eventually some process (not necessarily the same) will be in its critical section; similarly for exiting the critical section}
+\end{itemize}
+\end{block}
+\end{slide}
+
+%%----------------------------------------------------------------------------------
+\begin{slide}{Mutual exclusion}
+\small
+
+
+\begin{block}{The Problem}
+\begin{itemize}
+\item 
+Dijkstra's original asynchronous algorithm (1965) requires, for $n$ processes to be controlled,
+$\mathcal{O}(n)$ read-write registers and $\mathcal{O}(n)$ operations.
+\item
+This result is a theoretical limit (proved by Lynch and Shavit in 1992) which compromises scalability.
+\end{itemize}
+\end{block}
+\pause
+\fbox{but it can be overcome by introducing specific \dkb{timing constraints}}
+%\end{block}
+
+\begin{block}{Two \emph{timed} algorithms:}
+\begin{itemize}
+\item  \dkb{Fisher's protocol} (included in the \textsc{Uppaal} distribution)
+\item  \dkb{Lamport's protocol}
+\end{itemize}
+\end{block}
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Fisher's algorithm}
+\small
+
+\begin{block}{The algorithm}
+\begin{align*}
+\mathsf{repeat} & \\
+& \mathsf{repeat}  \\
+&  \hspace{1cm} \mathsf{await} \; id = 0\\
+& \hspace{1cm} id := i\\
+& \hspace{1cm}  \mathsf{delay}(k)\\ 
+& \mathsf{until}\; id=i  \\
+& \text{\emph{(critical section)}}\\
+& id := 0\\
+\mathsf{forever} &
+\end{align*}
+\end{block}
+\end{slide}
+
+
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Alur \& Taubenfeld's algorithm}
+%\small
+%
+%\begin{block}{The algorithm}
+%\begin{align*}
+%\mathsf{repeat} & \\
+%& s:\;  x:=i\\
+%&\mathsf{await}\, (y = 0)\\
+%& y := i\\
+%& \mathsf{if}\;  x \neq i \; \mathsf{then}\,\\
+%&  \hspace{1cm} \mathsf{delay}(2d); \\
+%&  \hspace{1cm}  \mathsf{if}\; y \neq i \; \mathsf{then}\,\mathsf{goto}\, s; \\
+%&  \hspace{1cm}  \mathsf{await}\, (\neg z)\\
+%&  \mathsf{else}\, z:= true;\\
+%& \text{\emph{(critical section)}}\\
+%& z := false\\
+%& \mathsf{if}\;  y = i \; \mathsf{then}\; y:=0;\\
+%\mathsf{forever} &
+%\end{align*}
+%\end{block}
+%\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Fisher's algorithm}
+\small
+\begin{block}{Comments}
+\begin{itemize}
+\item One shared read/write register (the variable $id$)
+\item Behaviour depends crucially on the value for $k$ --- the \dkb{time delay}
+\item Constant $k$ should be \dgold{larger than the longest time that a process may take to perform a step while trying to get access to its critical section} 
+\item This choice guarantees that whenever process $i$ finds $id = i$ on testing the loop guard it can enter safely ist critical section: \dgold{all} other processes are out of the loop or with their index in $id$ overwritten by $i$.
+\end{itemize}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Fisher's algorithm in \textsc{Uppaal}}
+\small
+\centering
+
+\includegraphics[width=6cm]{./images/P.pdf} 
+%\includegraphics[width=1.1\textwidth]{./images/P.pdf} 
+
+
+\begin{itemize}
+\item Each process uses a local clock $x$ to guarantee that the upper bound between between its successive steps, while
+trying to access the critical section, is $k$ (cf. \dgold{invariant} in state $req$).
+\item \dgold{Invariant} in state $req$ establishes $k$ as such an upper bound
+\item \dgold{Guard} in transition from $wait$ to $cs$ ensures the correct delay before entering the critical section
+\end{itemize}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{frame}[fragile]{Fisher's algorithm in \textsc{Uppaal}}
+\small
+
+\begin{block}{Properties}
+%\includegraphics[width=12cm]{./images/ficher2.jpg} 
+\begin{lstlisting}[emph={[2]forall,not}]
+% P(1) requests access => it will eventually wait
+P(1).req -> P(1).wait
+% the algorithm is deadlock-free
+A[] not deadlock
+% mutual exclusion invariant
+A[] forall (i:int[1,6]) forall (j:int[1,6])
+   P(i).cs && P(j).cs imply i == j  
+\end{lstlisting}
+\end{block}
+
+\begin{itemize}
+\item The algorithm is \dgold{deadlock-free}
+\item It ensures  mutual exclusion if the correct timing constraints. 
+\item ... but it is critically sensible to  small violations of such constraints: for example, replacing $x > k$ by 
+$x \geq k$ in the transition leading to $cs$ compromises both \dgold{mutual exclusion} and \dgold{liveness}.
+\end{itemize}
+\end{frame}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Lamport's algorithm}
+\small
+
+\begin{block}{The algorithm}
+\begin{align*}
+\mathsf{start}: \; \;  &  a := i\\
+& \mathsf{if}\; b \neq 0\; \mathsf{then\; goto\; start}\\
+& b := i \\
+& \mathsf{if}\; a \neq i\; \mathsf{then\; delay}(k)\\
+& \hspace{12mm} \mathsf{else} \; \mathsf{if}\; b \neq i\; \mathsf{then\; goto\; start}\\
+& \text{\emph{(critical section)}}\\
+& b := 0
+\end{align*}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Lamport's algorithm}
+\small
+\begin{block}{Comments}
+\begin{itemize}
+\item Two shared read/write registers (variables $a$ and $b$)
+\item Avoids \dgold{forced waiting} when no other processes are requiring access to their critical sections
+\end{itemize}
+\end{block}
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Lamport's algorithm in \textsc{Uppaal}}
+\small
+
+\begin{center}
+\includegraphics[width=9cm]{./images/lamport.jpg} 
+\end{center}
+
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Lamport's algorithm}
+\small
+\begin{block}{Model time constants:}
+\begin{description}
+\item \dkb{$k$} --- time delay
+\item \dkb{$kvr$} --- max bound for register access
+\item \dkb{$kcs$} --- max bound for permanence in critical section 
+\end{description}
+Typically
+\vspace{-4mm}
+\begin{center}
+\fbox{$k\; \geq \; kvr + kcs$}
+\end{center}
+\end{block}
+\vspace{-2mm}
+
+\begin{block}{Experiments}
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+& $k$ & $kvr$ & $kcs$ & verified? \\
+\hline
+Mutual Exclusion & 4 & 1 & 1 & Yes\\
+Mutual Exclusion & 2 & 1 & 1 & Yes\\
+Mutual Exclusion & 1 & 1 & 1 & No\\
+No deadlock & 4 & 1 & 1 & Yes\\
+No deadlock & 2 & 1 & 1 & Yes\\
+No deadlock  & 1 & 1 & 1 & Yes\\
+\hline
+\end{tabular}
+\end{block}
+\end{slide}
+
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Reading suggestions}
+%\small
+%
+%\begin{center}
+% \includegraphics[height=9cm]{./images/lamportPaper.jpg} 
+%\end{center}
+%
+%\end{slide}
+%
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Reading suggestions}
+%\small
+%
+%
+%   \includegraphics[height=8cm]{./images/lamportON.jpg}
+%
+%\end{slide}
+%
+%
+\end{document}
+

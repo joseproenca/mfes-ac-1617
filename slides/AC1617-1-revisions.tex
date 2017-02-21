@@ -173,8 +173,8 @@
       \column{.56\textwidth}
       \begin{itemize}
         \item emphasize on \blue{states} - desired/forbidden states
-        \item \blue{Petri nets} to generate models
-        \item $\ger{M},1 ~\models~ \red{p}$
+        \item \blue{SMV language} to generate models
+        \item $\ger{M},1 \,\models\, \red{p}$ ~,~ $\ger{M},1 \,\models\, \red{F\,G\,p}$
       \end{itemize}
     \end{columns}
   \end{block}
@@ -195,6 +195,44 @@
     \end{columns}    
   \end{block}
 \end{frame}
+
+
+\begin{slide}{Syllabus (recall)} 
+\begin{itemize}
+\item Introduction to software architecture
+\item \rdb{Background}
+\begin{itemize}
+\item \dkb{Introduction to transition systems} 
+  (\dgold{\textsf{mCRL2}})
+\item \dkb{Introduction to modal, hybrid and dynamic logic}
+  (\dgold{\textsf{mCRL2}})
+\end{itemize}
+\item \rdb{Models and calculi of reactive systems}
+\begin{itemize}
+%\item \dkb{Classical (non deterministic)}  (\dgold{\textsf{mCRL2}})
+\item \dkb{Timed (with real time constraints)} (\dgold{\textsf{Uppaal}})
+%\item \dkb{Probabilistic}  (\dgold{\textsf{PRISM}})
+%\item \dkb{Cyber-physical} (\dgold{\textsf{KeYmaera}})
+% \item \transp[30]{Probabilistic  ({\textsf{PRISM}})}
+% \item \transp[30]{{Cyber-physical} ({\textsf{KeYmaera}})}
+\end{itemize}
+\item \rdb{Architecture for reactive systems}
+\begin{itemize}
+%\item \dkb{An architectural description language} (\dgold{\textsf{AADL}})
+\item \dkb{Component-oriented architectural design}
+\begin{itemize}
+\item  \dkb{Paradigm:} Software components as monadic Mealy machines
+%\item \dkb{Foundations:}  Coalgebra theory as a semantic framework for state-based systems a component calculus
+\item \dkb{Method:} The \dgold{\textsf{mMm}} calculus; prototyping in  \dgold{\textsc{Haskell}}
+\end{itemize}
+\item  \dkb{Coordination-oriented architectural design}
+\begin{itemize}
+\item  \dkb{Paradigm:} The  \dgold{\textsf{Reo}} exogenous coordination model
+\item \dkb{Method:} Compositional specification of the glue layer 
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\end{slide}
 
 
 \end{document}

@@ -734,10 +734,10 @@
   ,morecomment=[l]{\%}
   ,commentstyle=\sl\sffamily\color{gray}\scriptsize
   ,basicstyle=\ttfamily\relsize{-0.5}
-  ,keywordstyle=\bf\sffamily\color{purple}
+  ,keywordstyle=\bf\color{red!50!blue}                % morekeywords={...} - not used
 %  ,emphstyle=\it\sffamily\color{blue!80!black}
-  ,emphstyle=\bfseries\itshape\color{blue!80!black}
-  ,emphstyle={[2]\itshape\color{red!70!black}}%\underbar}
+  ,emphstyle=\bfseries\itshape\color{blue!80!black}       % moreemph={...} - layer keywords
+  ,emphstyle={[2]\itshape\color{red!70!black}}%\underbar} % moreemph={[2]...} - inner keywords
   ,stringstyle=\color{darkgreen}
   ,alsoletter={-,||,+,<>,&&,=>}
   ,literate=*{->}{{{\color{red!70!black}$\to$}}}{1}
@@ -745,7 +745,9 @@
              {+}{{{\color{red!70!black}+}}}{1}
              {*}{{{\color{red!70!black}*}}}{1}
              {\#}{{{\color{red!70!black}\#}}}{1}
-  ,emph={act,proc,init,sort}
+             {&}{{{\color{red!70!black}\&}}}{1}
+             {:=}{{{\color{red!70!black}:=}}}{1}
+  ,emph={act,proc,init,sort,map,var,eqn}
   ,emph={[2]block,hide,comm,rename,allow,||,<>,sum,&&,=>}
 %  ,emphstyle={[2]\color{blue}}2
   ,framerule=1pt
@@ -760,6 +762,6 @@
   ,floatplacement=htb
 }
 \lstdefinestyle{bash}{literate=*}
-\newcommand{\code}[1]{\lstinline[basicstyle=\ttfamily\relsize{-0.5},keywordstyle=\bf\sffamily\color{purple},columns=fullflexible,keepspaces]±#1±}
+\newcommand{\code}[2][]{\lstinline[basicstyle=\ttfamily\relsize{-0.5},columns=fullflexible,keepspaces,#1]±#2±}
 \newcommand{\mcode}[1]{\text{\code{#1}}}
 \newcommand{\bash}[1]{\lstinline[basicstyle=\ttfamily\relsize{-0.5}\color{darkgreen},keywordstyle=\bf\sffamily\color{purple},columns=fullflexible,keepspaces,literate=*]±#1±}

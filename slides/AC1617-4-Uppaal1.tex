@@ -1,0 +1,1052 @@
+%\documentclass[handout]{beamer}
+\documentclass{beamer}
+\usepackage{etex} % fixes new-dimension error
+
+\input{macros/beamerconf}
+\input{macros/preamble}
+\input{macros/macros}
+
+%----------------------------------------------------------------------------
+\usepackage{graphicx,amsmath}
+\usepackage{stmaryrd} % cf. interleave
+\usepackage{booktabs}
+%\usepackage{./macros/myisolatin1}
+\usepackage{amscd}
+
+\usepackage{alltt}
+%------ using xy ------------------------------------------------------------
+\usepackage[all]{xy}
+%\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _-{#2} }}
+\def\larrow#1#2#3{\xymatrix{ #3 & #1 \ar[l] _--{#2} }}
+\def\rarrow#1#2#3{\xymatrix{ #1 \ar[r]^-{#2} & #3 }}
+\def\arLaw#1#2#3#4#5{
+\xymatrix{
+        #1      \ar@/^1pc/[rr]^-{#4} &
+        #5 &
+        #2      \ar@/^1pc/[ll]^-{#3}
+}}
+\def\arLeq#1#2#3#4{\arLaw{#1}{#2}{#3}{#4}\leq}
+%------ using pstricks (rnode etc) ------------------------------------------
+\usepackage{pstricks,pst-node,pst-text,pst-3d}
+%------ using color ---------------------------------------------------------
+
+\newrgbcolor{goldenrod}{.80392 .60784 .11373}
+\newrgbcolor{darkgoldenrod}{.5451 .39608 .03137}
+\newrgbcolor{brown}{.15 .15 .15}
+\newrgbcolor{darkolivegreen}{.33333 .41961 .18431}
+%
+%
+\def\gold#1{{\goldenrod #1}}
+\def\dgold#1{{\darkgoldenrod #1}}
+%\def\brw#1{{\brown #1}}
+\def\dkb#1{{\blue #1}}
+\def\tdkb#1{\textbf{\darkblue #1}}
+%%\def\gre#1{{\green #1}}
+\def\gre#1{{\darkolivegreen #1}}
+\def\gry#1{{\gray #1}}
+\def\rdb#1{{\red #1}}
+\def\st{\mathbf{.}\,}
+\def\laplace#1#2{*\txt{\mbox{ \fcolorbox{black}{myGray}{$\begin{array}{c}\mbox{#1}\\\\#2\\\\\end{array}$} }}}
+%\newcommand{\galois}[2]{#1\; \dashv\; #2}
+
+\def\eqm{\mathbin{\equiv}}                     
+\def\noeqm{\mathbin{\not\!\equiv}}  
+%\newcommand{\flam}[2]{\lambda_{#1}\; .\; #2}
+\def\existential#1#2{\exists_{#1}\;.\; #2}
+\def\existencial#1#2{\exists_{#1}\;.\; #2}
+
+\def\pv#1#2{\langle #1 \rangle #2}
+\def\nc#1#2{[#1]#2}
+\def\pvo#1#2{\langle \! \! \! \langle #1 \rangle \! \! \! \rangle\, #2}
+\def\nco#1#2{\llbracket #1 \rrbracket #2}
+\def\cvg#1{\llbracket \downarrow \rrbracket #1}
+\def\cvgr#1#2{\llbracket #1 \downarrow \rrbracket #2}
+\def\cvgl#1#2{\llbracket \downarrow  #1 \rrbracket #2}
+\def\cvglr#1#2{\llbracket \downarrow  #1 \downarrow \rrbracket #2}
+\def\lfp#1#2{\mu {#1}\, .\, {#2}}
+\def\lpf#1#2{\mu {#1}\, .\, {#2}}
+\def\gfp#1#2{\nu {#1}\, .\, {#2}}
+\def\gpf#1#2{\nu {#1}\, .\, {#2}}
+\def\mset#1{\vvv #1 \vvv}
+\def\vvv{\vert \! \vert}
+\def\mnc#1{\vvv [#1] \vvv}
+\def\mpv#1{\vvv \langle #1 \rangle \vvv}
+\def\bcomp#1{#1^{\text{c}}}
+\def\eqm{\mathbin{\simeq}}
+\def\noeqm{\mathbin{\not\!\simeq}}
+\def\universal#1#2{\forall_{#1}\;.\; #2}
+\def\existential#1#2{\exists_{#1}\;.\; #2}
+\def\oexistential#1#2{\exists^{1}_{#1}\;.\; #2}
+\def\MM{\mathcal{M}}
+\def\uppaal{\textsc{Uppaal}}
+\def\cc#1{\mathcal{C}(#1)}
+\def\R{\mathcal{R}}
+\def\TL#1{\mathcal{T}(#1)}
+\def\ET#1{\mathsf{ExecTime(#1)}}
+
+
+\title{
+	Time-critical reactive systems \\ (modelling) 	}
+\author{Jos\'{e} Proen\c{c}a}
+\institute{HASLab - INESC TEC \\ Universidade do Minho\\ Braga, Portugal}
+
+\date{
+\begin{tabular}{c}
+\\
+   March/April,  2017
+\end{tabular}
+
+}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+%slides de motivacao a retirar se aparecerem primeiro os do mCRL2
+
+\section{Motivation}
+%----------------------------------------------------------------------------------
+\begin{slide}{Motivation}\label{xxx}
+\small
+
+
+
+Specifying an airbag saying that  \dgold{in a car crash the airbag eventually inflates}
+maybe not enough, but:
+\begin{center}
+ in a car crash the airbag eventually inflates \dkb{within 20ms}
+\end{center}
+
+
+\caixa{\emph{Correctness in time-critical systems not only depends on the logical result of the computation, but also 
+\dkb{on the time at which the results are produced}}
+\begin{flushright}
+[Baier \& Katoen, 2008]
+\end{flushright}} 
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Examples of time-critical systems}
+\small
+\begin{block}{Lip-synchronization protocol}
+Synchronizes the separate video and audio sources bounding on
+the amount of time mediating the presentation of a video frame and the corresponding audio frame. Humans tolerate
+ less than 160 ms.
+\end{block}
+
+\begin{block}{Bounded retransmission  protocol}
+Controls communication of large files over infrared channel between a remote control unit and a 
+video/audio equipment. Correctness depends crucially on  
+\begin{itemize}
+\item transmission and synchronization delays
+\item time-out values for times at sender and receiver
+\end{itemize}
+\end{block}
+
+\begin{block}{And many others...}
+\begin{itemize}
+\item medical instruments
+\item hybrid systems (eg for controlling industrial plants)
+\item $\cdots$
+\end{itemize}
+\end{block}
+\end{slide}
+
+
+%\end{document}
+% fim slides motivacao
+
+\section{Timed Automata}
+%----------------------------------------------------------------------------------
+\begin{slide}{Motivation}
+\small
+
+\begin{itemize}
+\item \dgold{timed transition systems}, \dgold{timed Petri nets}, \dgold{timed IO automata}, \dgold{timed process algebras} and other formalisms associate lower and upper bounds to transitions, but no \dkb{time constraints} to transverse the automaton.
+\item Expressive power is often somehow limited and \dgold{infinite}-state LTS (introduced to express \dkb{dense} time models) are 
+difficult to handle in practice
+\end{itemize}
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Motivation}
+\small
+
+\begin{block}{Example}
+Typical process algebra tools, such as mCRL2, are unable to express a \dgold{system which has one action $a$ which can only occur at time point $5$
+with the effect of moving the system to its initial state.}
+\end{block}
+~\\
+
+This example has, however, a simple description in terms of time measured by a \dgold{stopwatch}:
+\begin{enumerate}
+\item Set the stopwatch to 0
+\item When the stopwatch measures 5, action $a$ can occur. If $a$ occurs go to 1., if not idle forever.
+\end{enumerate}
+
+~\\
+\end{slide}
+
+
+
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Motivation}
+\small
+This suggests resorting to an \dkb{automaton-based formalism} with an explicit notion of 
+\dkb{clock} (stopwatch) to control availability of transitions.
+
+
+\begin{center}
+\fbox{\dkb{Timed Automata} [Alur \& Dill, 90]}
+\end{center}
+
+
+\begin{itemize}
+\item emphasis on decidability of the model-checking problem and corresponding practically efficient algorithms
+\item infinite underlying  timed transition systems are converted to \dkb{finitely large} symbolic transition systems where \dkb{reachability} becomes decidable (\dgold{region} or \dgold{zone} graphs)
+\end{itemize}
+
+\noindent
+\dgold{Associated tools}
+\begin{itemize}
+\item \uppaal\ [Behrmann, David, Larsen, 04]
+\item \textsc{Kronos} [Bozga, 98]
+\end{itemize}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Motivation}
+\small
+
+
+
+\begin{center}
+\fbox{\dkb{UPPAAL} = (\dkb{Upp}sala University + \dkb{Aal}borg University) [1995]}
+\end{center}
+
+\begin{itemize}
+\item  A toolbox for \dkb{modeling}, \dkb{simulation} and \dkb{verification} of real-time systems
+\item where systems are modeled as networks of \dkb{timed automata} enriched with \dgold{integer variables},
+\dgold{structured data types},
+\dgold{channel syncronisations} and
+\dgold{urgency annotations}
+\item  Properties are specified in a subset of CTL 
+\end{itemize}
+
+
+\begin{flushright}
+\texttt{www.uppaal.com}
+\end{flushright}
+\end{slide}
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timed automata}
+\small
+
+\caixa{Finite-state machine equipped with a finite set of real-valued clock variables (\dgold{clocks})}
+
+\dkb{Clocks}
+\begin{itemize}
+\item \dkb{dense-time} model
+\item clocks can only be \dkb{inspected} or
+\item \dkb{reset to zero}, after which they start increasing their value implicitly as time progresses
+\item the value of a clock corresponds to time elapsed since its last reset 
+\item all clocks proceed synchronously (at the same rate)
+\end{itemize}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timed automata}
+\small
+
+\begin{block}{Definition}
+\begin{equation*}
+\pair{L, L_0, Act, C, Tr, Inv}
+\end{equation*}
+where
+\begin{itemize}
+\item $L$ is a set of \dkb{locations}, and $L_0 \subseteq L$ the set of \dkb{initial} locations
+\item $Act$ is a set of \dkb{actions} and $C$ a set of \dkb{clocks}
+\item $Tr \subseteq L \times \cc{C} \times Act \times \pow{(C)} \times L$ is the \dkb{transition relation}
+\begin{equation*}
+l_1\; \tran{g,a,U}\;  l_2
+\end{equation*}
+denotes a transition from location $l_1$ to $l_2$, \dkb{labelled} by $a$, enabled if \dkb{guard} $g$
+is valid, which, when performed, \dkb{resets} the set $U$ of \dkb{clocks}
+\item $\fdec{Inv}{L}{\cc{C}}$ is the assigment of \dkb{invariants} to locations  
+\end{itemize}
+where $\cc{C}$ denotes the  set of clock constraints over a set $C$ of clock variables
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Example: the lamp interrupt}
+\small
+(extracted from \uppaal)
+
+\begin{figure}[htb]
+  \centering
+  % Requires \usepackage{graphicx}
+  \includegraphics[width=7cm]{./images/lamp1.jpg}\\
+\end{figure}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Clock constraints}
+\small
+
+$\cc{C}$ denotes the  set of clock constraints over a set $C$ of clock variables.
+Each constraint is formed according to 
+\begin{equation*}
+g \; ::=\; x \mathbin{\square} n \; \mid\; x - y \mathbin{\square} n  \; \mid\; g \e g \;\mid\; true
+\end{equation*}
+where $x,y \in C, n \in \N$ and $\square \in \enset{<,\leq,>,\geq}$
+
+
+%\pause
+used in
+\begin{itemize}
+\item  \dkb{transitions} as \dkb{guards} (enabling conditions)
+\fbox{a transition cannot occur if its guard is invalid}
+\item  \dkb{locations} as \dkb{invariants} (safety specifications)
+\fbox{a location must be left before its invariant becomes invalid}
+\end{itemize}
+
+\begin{block}{Note}
+Invariants are the \dkb{only} way to force transitions to occur
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Guards, updates \&  invariants}
+\small
+
+
+\begin{tabular}{c}
+   \includegraphics[width=8cm]{./images/model0.jpg} \\  \includegraphics[width=7cm]{./images/model1.jpg}
+\end{tabular}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Transition guards \& location invariants}
+\small
+
+\begin{block}{Demo (in  \uppaal)}
+~\\
+
+
+\begin{tabular}{ccc}
+  \includegraphics[width=3cm]{./images/g1.jpg} & \includegraphics[width=3cm]{./images/g2.jpg} &  \includegraphics[width=3cm]{./images/g3.jpg}
+\end{tabular}
+
+\end{block}
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Parallel composition of timed automata}
+\small
+
+\begin{itemize}
+\item Action labels as \dkb{channel} identifiers
+\item Communication by \dkb{forced handshacking} over a subset of common actions
+\item Can be defined as an associative binary operator (as in the tradition of process algebra) or
+as an automaton construction over a finite set of timed automata originating a so-called \dgold{network}
+of timed automata
+\end{itemize}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Parallel composition of timed automata}
+\small
+
+%\begin{block}{$TA_1 \parallel TA_2$}
+Let $H \subseteq Act_1 \cap Act_2$. The parallel composition of $ta_1$ and  $ta_2$ synchronizing on $H$
+is the timed automata
+\begin{equation*}
+\dkb{ta_1 \parallel_H ta_2 := \pair{L_1 \times L_2, L_{0,1} \times L_{0,2}, Act_{\parallel_H}, C_1 \cup C_2, Tr_{\parallel_H}, Inv_{\parallel_H}}}
+\end{equation*}
+where
+\begin{itemize}
+\item $\dkb{Act_{\parallel_H}} = ((Act_1 \cup Act_2) - H) \cup \enset{\tau}$
+\item $\dkb{Inv_{\parallel_H}} \pair{l_1,l_2} = Inv_1(l_1) \e  Inv_2(l_2)$
+\item $\dkb{Tr_{\parallel_H}}$ is given by:
+\begin{itemize}
+\item $\pair{l_1,l_2} \tran{g,a,U} \pair{l'_1,l_2}\; $ if $\; a \not \in H \e  l_1 \tran{g,a,U} l'_1 $
+\item $\pair{l_1,l_2} \tran{g,a,U} \pair{l_1,l'_2}\; $ if $\; a \not \in H \e   l_2 \tran{g,a,U} l'_2$
+\item $\pair{l_1,l_2} \tran{g,\tau,U} \pair{l'_1,l'_2}\; $ if $\; a \in H \e  l_1 \tran{g_1,a,U_1} l'_1 \e l_2 \tran{g_2,a,U_2} l'_2$\\
+with $g = g_1 \e g_2$ and $U = U_1 \cup U_2$
+\end{itemize}
+\end{itemize}
+%\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Example: the lamp interrupt as a closed system}
+\small
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=8cm]{./images/lamp2.jpg}\\
+\end{figure}
+
+
+\begin{block}{\uppaal:}
+\begin{itemize}
+\item takes $H = Act_1 \cap Act_2$ (actually as \dkb{complementary} actions denoted by the \dkb{?} and \dkb{!} 
+annotations)
+\item  only deals with \dkb{closed} systems 
+\end{itemize}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Exercise: worker, hammer, nail}
+\small
+
+\begin{figure}[htb]
+  \centering
+  % Requires \usepackage{graphicx}
+  \includegraphics[width=45mm]{./images/WHN.jpg}\\
+\end{figure}
+\end{slide}
+
+\section{Semantics}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timed Labelled Transition Systems}
+\small
+\begin{tabular}{lc@{~~}l}
+\toprule 
+\dgold{Syntax} && \dgold{Semantics}\\
+\cmidrule(lr){1-3}
+Process Languages (eg CCS) &  & LTS (Labelled Transition Systems)\\
+\dkb{Timed Automaton} &  & TLTS (Timed LTS) \\
+\bottomrule
+\end{tabular}
+~\\
+~\\
+~\\
+\pause
+
+\begin{block}{Timed LTS}
+Introduce \dkb{delay transitions} to capture the passage of time within a LTS:
+\begin{align*}
+s \tran{a} s' & \;\; \text{for $a \in Act$, are ordinary transitions due to action occurrence }\\
+s \tran{d} s' &\; \;  \text{for $d \in \R^+$, are \dkb{delay} transitions}
+\end{align*}
+subject to a number of constraints, eg, 
+\end{block}
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Dealing with time in system models}
+\small
+\begin{block}{Timed LTS}
+\begin{itemize}
+\item \dkb{time additivity}
+\begin{equation*}
+(s \tran{d} s'  \e 0 \leq d' \leq d)\; \imp\; s  \tran{d'} s'' \tran{\; d-d'} s' \; \text{for some state $s''$}
+\end{equation*}
+\item delay transitions are \dkb{deterministic}
+\begin{equation*}
+(s \tran{d} s'  \e s \tran{d} s'')\; \imp\; s'  = s''
+\end{equation*}
+%\item a state can only reach itself \dkb{without delay}
+%\begin{equation*}
+%s \tran{0} s  \; \text{for all states $s$}
+%\end{equation*}
+\end{itemize}
+\end{block}
+\end{slide}
+
+
+
+
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Semantics of Timed Automata}
+\small
+
+\begin{block}{Semantics of TA:}
+Every TA $ta$ defines a TLTS 
+\begin{equation*}
+\dkb{\TL{ta}}
+\end{equation*}
+whose states are pairs 
+\begin{equation*}
+\pair{\dkb{\text{location}}, \dkb{\text{clock valuation}} }
+\end{equation*}
+with \dkb{infinitely}, even \dkb{uncountably} many states, and infinite branching
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Clock valuations}
+\small
+
+
+\begin{block}{Definition}
+A \dkb{clock valuation} $\eta$ for a set of clocks $C$ is a function 
+\begin{equation*}
+\fdec{\eta}{C}{\R_0^+}
+\end{equation*}
+assigning to each clock $x \in C$ its current value $\eta\, x$.
+\end{block}
+~\\
+
+\begin{block}{Satisfaction of clock constraints}
+\begin{align*}
+\eta \models x \mathbin{\square} n \; & \dimp\; \eta\, x \mathbin{\square} n\\
+\eta \models x-y \mathbin{\square} n \; & \dimp\; (\eta\, x - \eta\, y) \mathbin{\square} n\\
+\eta \models g_1 \e g_2 \; & \dimp\; \eta \models g_1 \e \eta \models g_2
+\end{align*}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Operations on clock valuations}
+\small
+
+
+\begin{block}{Delay}
+For each $d \in \R_0^+$, valuation $\eta + d$ is given by
+\begin{equation*}
+(\eta + d)\, x\; =\; \eta\, x\; +\; d
+\end{equation*}
+\end{block}
+~\\
+
+\begin{block}{Reset}
+For each $R \subseteq C$, valuation $\eta[R]$ is given by
+\begin{equation*}
+\begin{cases}
+\eta[R]\, x\; =\; \eta\, x & \; \rimp\; x \not\in R\\
+\eta[R]\, x\; =\; 0 & \; \rimp\; x \in R
+\end{cases}
+\end{equation*}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{From $ta$ to $\TL{ta}$}
+\small
+Let $ta = \pair{L, L_0, Act, C, Tr, Inv}$
+\begin{equation*}
+ \dkb{\TL{ta}\; =\; \pair{S, S_0 \subseteq S, N, T}}
+\end{equation*}
+where
+\begin{itemize}
+\item $S = \setdef{\pair{l,\eta} \in  L \times (\R_0^+)^C}{\eta \models Inv(l)}$
+\item $S_0 = \setdef{\pair{l_0,\eta}}{l_0 \in L_0\; \e\;  \eta\, x = 0\; \text{for all $x \in C$}}$
+\item $N = Act \cup \R_0^+$ (ie, \dgold{transitions can be labelled by actions or delays})
+\item $T \subseteq S \times N \times S$ is given by:
+\end{itemize}
+\begin{align*}
+\pair{l,\eta} \tran{a} \pair{l',\eta'}\; & \rimp\; 
+\exists_{l \tran{g,a,U} l' \in Tr}  \; \;\eta \models g \; \e\; \eta' = \eta[U] \; \e\;  \eta' \models Inv(l')\\
+\pair{l,\eta} \tran{d} \pair{l,\eta+d}\; & \rimp\; 
+\exists_{d \in \R_0^+}  \; \;  \eta + d \models Inv(l)
+\end{align*}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Example: the simple switch}
+\small
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=5cm]{./images/PASswitchA.jpg}\\
+\end{figure}
+
+\begin{block}{$\TL{\mathsf{SwitchA}}$}
+\begin{equation*}
+S = \setdef{\pair{off,t}}{t \in \R_0^+} \cup \setdef{\pair{on,t}}{0 \leq t \leq 2} 
+\end{equation*}
+where $t$ is a shothand for $\eta$ such that $\eta\, x = t$
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Example: the simple switch}
+\small
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=5cm]{./images/PASswitchA.jpg}\\
+\end{figure}
+
+\begin{block}{$\TL{\mathsf{SwitchA}}$}
+\vspace{-7mm}
+\begin{align*}
+\pair{off,t} \tran{d} \pair{off,t+d}\; & \; \text{for all $t,d \geq 0$}\\
+ \pair{off,t} \tran{in} \pair{on,0}\; & \; \text{for all $t \geq 0$}\\
+\pair{on,t} \tran{d} \pair{on,t+d}\; & \; \text{for all $t,d \geq 0$ and $t+d \leq 2$}\\
+\pair{on,t} \ \tran{out} \pair{off,t}\; & \; \text{for all $1 \leq t \leq 2$}
+\end{align*}
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Note}
+\small
+
+\begin{itemize}
+\item The elapse of time in timed automata \dkb{only} takes place in locations:
+\item ... actions take place instantaneously 
+\item Thus, several actions may take place at a single time unit
+\end{itemize}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Behaviours}
+\small
+
+\begin{itemize}
+\item Paths in $\TL{ta}$ are \dkb{discrete representations of continuous-time behaviours} in $ta$
+\item ... at least they indicate the states immediately before and after the execution of an action
+%\item Such paths can also be represented graphically through \dkb{location diagrams}
+\item However, as interval delays may be realised in \dgold{uncountably} many different ways, different paths 
+may represent the same behaviour
+\pause
+\item ... but not all paths correspond to valid  (\dkb{realistic}) behaviours:
+\end{itemize}
+
+\begin{block}{undesirable paths:}
+\begin{itemize}
+\item  \dkb{time-convergent} paths
+\item  \dkb{timelock} paths
+\item  \dkb{zeno} paths
+\end{itemize}
+\end{block}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Time-convergent paths}
+\small
+
+\begin{equation*}
+\pair{l,\eta}  \tran{d_1} \pair{l,\eta + d_1}  \tran{d_2} \pair{l,\eta + d_1 + d_2}  \tran{d_3} \pair{l,\eta + d_1 + d_2 + d_3}  \tran{d_4} 
+\cdots  
+\end{equation*}
+such that 
+\begin{equation*}
+\forall_{i \in N}\st\, d_i > 0\; \e\; \sum_{i \in N}  d_i = d
+\end{equation*}
+ie, the \dgold{infinite sequence of delays converges toward $d$}
+
+\begin{itemize}
+\item Time-convergent path are \dgold{conterintuitive}; as their existence cannot be avoided, they are simply  \dkb{ignored} in the semantics of Timed Automata
+\item Time-\dkb{divergent} paths are the ones in which time always progresses
+\end{itemize}
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Time-convergent paths}
+\small
+
+\begin{block}{Definition}
+An infinite path fragment $\rho$ is \dkb{time-divergent} if $\ET{\rho} = \infty$\\
+Otherwise is  \dkb{time-convergent}. 
+\end{block}
+
+where
+\begin{align*}
+\ET{\rho}\; & =\; \sum_{i=0 .. \infty} \ET{\delta}\\
+\ET{\delta}\; & =\; \begin{cases}
+0 & \rimp\;  \delta \in Act\\
+d & \rimp\:  \delta \in \R_0^+
+\end{cases}
+\end{align*}
+for $\rho$ a path and $\delta$ a label in $\TL{ta}$ 
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timelock paths}
+\small
+
+\begin{block}{Definition}
+A path is \dkb{timelock} if it contains a state with a timelock, ie, a \dgold{state
+from which there is not any time-divergent path}
+\vspace{0.3cm}
+
+A \dkb{timelock} represents a situation that causes time progress to halt (e.g. when it is impossible to leave a location before its invariant becomes invalid)
+\end{block}
+
+\begin{itemize}
+\item any \dkb{teminal state} ($\neq$ terminal location) in $\TL{ta}$ contains a timelock
+\item ... but not all timelocks arise as terminal states in $\TL{ta}$
+\end{itemize}
+\end{slide}
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timelock paths}
+\small
+
+\begin{center}
+  \includegraphics[width=4.5cm]{./images/SwitchB} 
+\end{center}
+
+State $\pair{on,2}$ is reachable through path 
+$$\pair{off,0} \tran{s-on} \pair{on,0} \tran{2} \pair{on,2}$$
+and is terminal
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Timelock paths}
+\small
+
+
+\begin{center}
+  \includegraphics[width=4.5cm]{./images/SwitchC} 
+\end{center}
+
+State $\pair{on,2}$ is not terminal but has a \dkb{convergent} path:
+
+$$\pair{on,2} \pair{on,2.9}  \pair{on,2.99}  \pair{on,2.999}  ...$$
+
+\end{slide}
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Zeno}
+\small
+
+\begin{block}{In a Timed Automaton}
+\begin{itemize}
+\item The elapse of time only takes place at \dkb{locations}
+\item Actions occur \dkb{instantaneously}: at a single time instant several actions may take place
+\end{itemize}
+
+\caixa{... it may perform \dkb{infinitely} many actions in a \dkb{finite} time interval \\
+(non realizable because it would require infinitely fast processors)}
+\end{block}
+
+\pause
+\begin{block}{Definition}
+An infinite path fragment $\rho$ is \dkb{zeno} if it is \dgold{time-convergent} and
+\dgold{infinitely many actions occur along it}
+
+
+
+A timed automaton $ta$ is \dkb{non-zeno} if there is not an initial zeno path in $\TL{ta}$
+\end{block}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Zeno}
+\small
+
+
+\begin{block}{Example}
+Suppose the user can press the $in$ button when the light is $on$ in
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=5cm]{./images/PASswitchD.jpg}\\
+\end{figure}
+In doing so clock $x$ is reset to 0 and light stays $on$ for more 2 time units (unless the button is pushed again ...)
+\end{block}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Zeno}
+\small
+
+
+\begin{block}{Example}
+\dgold{Typical paths:}
+The user presses $in$ \dgold{infinitely fast}:
+\begin{equation*}
+\pair{off,0}  \tran{in}  \pair{on,0}  \tran{in}  \pair{on,0}  \tran{in}  \pair{on,0}  \tran{in}  \pair{on,0}  \tran{in} \cdots
+\end{equation*}
+
+
+The user presses $in$ \dgold{faster and faster}:
+\begin{equation*}
+\pair{off,0}  \tran{in}   \pair{on,0}  \tran{0.5} \pair{on,0.5} \tran{in} \pair{on,0} \tran{0.25}  \pair{on,0.25}   \tran{in} \pair{on,0}  \tran{0.125}  \cdots
+\end{equation*}
+\end{block}
+
+\caixa{How can this be fixed?}
+
+\myblock{Time shall pass!}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Zeno}
+\small
+
+
+\begin{block}{Sufficient criterion for nonzenoness}
+A timed automaton is nonzeno if on any of its control cycles time advances with at least some  
+\dkb{constant amount} ($\geq 0$). Formally, if for every control cycle
+\begin{equation*}
+l_0 \tran{g_0, a_0, U_0} l_1 \tran{g_1, a_1, U_1} \cdots  \tran{g_n, a_n, U_n} l_n 
+\end{equation*}
+with $l_0=l_n$,  there exists a clock $x \in C$ such that
+\begin{enumerate}
+\item  $x \in U_i$ (for $0 \leq i \leq n$)
+\item for all clock valuations $\eta$, there is a  $c \in \N_{>0}$ such that
+\begin{equation*}
+\eta\, x < c\; \imp\; ((\eta \not\models g_j)\; \ou\; Inv(l_j)) \; \text{for some $0 < j \leq n$}
+\end{equation*}
+\end{enumerate}
+
+
+\end{block}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Warning}
+\small
+
+Both 
+\begin{itemize}
+\item timelocks
+\item zenoness
+\end{itemize}
+are \dkb{modelling flaws} and need to be avoided.
+
+
+\begin{block}{Example}
+In the example above, it is enough to impose a non zero minimal delay  between successive button pushings.
+\end{block}
+
+\end{slide}
+
+
+
+
+\section{Modelling in \uppaal}
+%----------------------------------------------------------------------------------
+\begin{slide}{\uppaal}
+\small
+
+... an \dkb{editor},  \dkb{simulator} and \dkb{model-checker} for TA with \dkb{extensions} ...
+
+\dkb{Editor.}
+\begin{itemize}
+\item \dgold{Templates} and \dgold{instantiations}
+\item Global and local \dgold{declarations}
+\item \dgold{System definition}
+\end{itemize}
+
+\dkb{Simulator.}
+\begin{itemize}
+\item Viewers: \dgold{automata animator} and \dgold{message sequence chart}
+\item Control (eg, \dgold{trace} management)
+\item Variable view: shows values of the integer variables and the clock constraints defining symbolic states
+\end{itemize}
+
+\dkb{Verifier.}
+\begin{itemize}
+\item (\texttt{see next session)}
+\end{itemize}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Extensions (modelling view)}
+\small
+
+\begin{itemize}
+\item \dkb{templates} with \dgold{parameters} and an \dgold{instantiation mechanism}
+\item \dkb{data expressions} over \dkb{bounded integer variables} (eg, \texttt{int[2..45] x}) allowed in \dgold{guards},
+\dgold{assigments} and \dgold{invariants}
+\item rich set of \dkb{operators} over integer and booleans, including bitwise operations, arrays, initializers ... in general
+a whole \dkb{subset of C} is available
+\item \dkb{non-standard} types of \dgold{synchronization}
+ \item \dkb{non-standard} types of \dgold{locations}
+\end{itemize}
+\end{slide}
+
+
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Extension: broadcast synchronization}
+\small
+
+
+
+\begin{itemize}
+\item A sender  can synchronize with an arbitrary number of receivers 
+\item Any receiver than can synchronize in the current state must do so
+\item Broadcast sending is never blocking (the send action can occur even with no receivers).
+\end{itemize}
+
+\end{slide}
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Extension: urgent synchronization}
+\small
+
+\begin{tabular}{c}
+   \includegraphics[width=3cm]{./images/urgent.jpg} 
+\end{tabular}
+
+Channel $a$ is declared \dkb{\texttt{urgent chan a}} if both edges are to be taken as soon as they are ready 
+(\dgold{simultaneously} in locations $l_1$ and $s_1$).
+
+Note the problem can  \dgold{not} be solved with \dgold{invariants} because locations $l_1$ and $s_1$ 
+can be reached at different moments
+
+\begin{itemize}
+%\item Declare as \texttt{urgent chan a}
+\item No delay allowed if a synchronization transition on an urgent channel is enabled
+\item Edges using urgent channels for synchronization cannot have time constraints (ie, clock guards)
+\end{itemize}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Extension: urgent location}
+\small
+
+\begin{tabular}{c}
+   \includegraphics[width=3cm]{./images/urgent2.jpg} 
+\end{tabular}
+
+\begin{itemize}
+%\item Declare as \texttt{urgent chan a}
+\item Time does not progress but interleaving with normal location is allowed
+\item Both models are equivalent: \dgold{no delay at an urgent location}
+\item but the use of \dkb{urgent location} reduces the number of clocks in a model and simplifies analysis
+\end{itemize}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{Extension: committed location}
+\small
+
+\begin{itemize}
+\item delay is not allowed and the committed transition must be left in the next instant (or one of them if there are several), i.e., 
+next transition must involve an outgoing edge of at least one of the committed locations
+\end{itemize} 
+
+\begin{tabular}{c}
+   \includegraphics[width=3cm]{./images/urgent1.jpg} 
+\end{tabular}
+
+\begin{itemize}
+\item Our aim is to pass the value $k$ to variable $j$ (via global variable $t$)
+\item Location $n$ is \dkb{committed} to ensure that no other automata can assign $j$ before
+the assignment $j:=t$
+\end{itemize}
+
+\end{slide}
+
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Modelling patterns: Value passing}
+%\small
+%
+%\begin{center}
+% \includegraphics[width=10cm]{pass.jpg} 
+%\end{center}
+%\end{slide}
+%
+%%----------------------------------------------------------------------------------
+%\begin{slide}{Hints}
+%\small
+%
+%
+%\begin{itemize}
+%\item \dgold{Modelling patterns}: see the \uppaal\ tutorial
+%\item \dgold{Further examples}: see the \texttt{demo} folder in the standard distribution
+%\end{itemize}
+%
+%\end{slide}
+%
+%%----------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------
+\begin{slide}{The train gate example}
+\small
+
+\begin{center}
+\includegraphics[width=5cm]{./images/tg1.jpg} 
+\end{center}
+
+\begin{itemize}
+\item Events model approach/leave, order to stop/go
+\item A train can not be stopped or restart instantly
+\item After approaching  it has 10m to receive a stop. 
+\item After that it  takes further 10 time units to reach the bridge
+\item After restarting takes 7 to 15m to reach the cross and 3-5 to cross
+\end{itemize}
+
+\end{slide}
+
+
+%----------------------------------------------------------------------------------
+\begin{slide}{The train gate example}
+\small
+
+\begin{center}
+\includegraphics[width=5cm]{./images/tg2.jpg} 
+\end{center}
+
+\begin{itemize}
+\item Note the use of parameters and the select clause on transitions
+\item Programming ...
+\end{itemize}
+
+\end{slide}
+
+%\begin{frame}[fragile]{Fisher's mutual exclusion protocol}
+%\small
+%
+%\begin{columns}
+%\column{.4\textwidth}
+%\includegraphics[width=1.1\textwidth]{./images/P.pdf} 
+%
+%\column{.58\textwidth}
+%\begin{itemize}
+%  \item Processes want to access a shared Critical Section
+%  \item Send a request for the access
+%  \item Wait $k$ time units -- if access is not given, resend a request
+%\end{itemize}
+%\end{columns}
+%
+%\bigskip
+%
+%\begin{lstlisting}[emph={[2]forall}]
+%% P(1) requests access => it will eventually wait
+%P(1).req -> P(1).wait
+%% mutual exclusion invariant
+%A[] forall (i:int[1,6]) forall (j:int[1,6])
+%  P(i).cs && P(j).cs imply i == j  
+%\end{lstlisting}
+%
+%\end{frame}
+
+\end{document}

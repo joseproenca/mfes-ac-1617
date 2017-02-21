@@ -100,10 +100,10 @@ $\pair{S, \Act,  \rra}$ where
 %\begin{equation*}
 %\downarrow s \; \equiv\; s \in \downarrow
 %\end{equation*}
-\item  $\rra \subseteq S \times \Act \times S$ is the transition relation, often given as an $\Act$-indexed family of 
+\item  $\rra \,\,\subseteq\, S \times \Act \times S$ is the transition relation, often given as an $\Act$-indexed family of 
 binary relations 
 \begin{equation*}
-s \rtran{a} s'\; \equiv\; \pair{s',a,s} \in \rra
+s \rtran{a} s'\; \equiv\; \pair{s,a,s'} \in \rra
 \end{equation*}
 \end{itemize}
 \end{block}
@@ -452,11 +452,11 @@ Two states $s, r$ are \dkb{trace equivalent} iff  $ \Tr{s} =  \Tr{r}$\\
 \end{block}
 ~\\
 
-\begin{block}{Example}
+\begin{example}
   \centering
   % Requires \usepackage{graphicx}
   \includegraphics[width=9cm]{./images/alarm3.pdf}
-\end{block}
+\end{example}
 
 
 \dgold{Trace equivalence} applies  when one can neither interact with a system, nor distinguish a slow system from one that has come to a stand still.
