@@ -1,0 +1,238 @@
+\documentclass[11pt]{article}
+
+
+\input{tp-macros}
+\date{Arquitectura e C\'alculo -- 2016/2017}
+
+\usepackage[latin1]{inputenc} % pt characters
+
+\begin{document}
+ 
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+ 
+\title{Assignment 1: Crossing the river -- in mCRL2}
+\author{Jos\'{e} Proen\c{c}a} 
+
+
+\maketitle
+
+
+\myparagraph{To do:} Write a report using LaTeX including the answers to the exercises below.
+
+\myparagraph{To submit:} The report in PDF by email.
+
+\myparagraph{Deadline:} 23 March 2017 @ 14h (Thursday)
+ 
+\section*{Modelling the wolf-sheep-cabbage problem}
+
+%-----------------------------------------------------------------------------
+\begin{exercise} \label{ex:ba1}
+Recall last semester's specification of the wolf-sheep-cabbage problem using SMV.
+
+\begin{lstlisting}[moreemph={IVAR,VAR,ASSIGN,DEFINE,INVAR,TRANS}]
+%%%%   SMV specification.  %%%%
+VAR
+        barqueiro : boolean;
+        lobo : boolean;
+        ovelha : boolean;
+        couve : boolean;
+IVAR
+        thing : {n,l,o,c};
+ASSIGN
+        init(barqueiro) := FALSE;
+        init(lobo)      := FALSE;
+        init(ovelha)    := FALSE;
+        init(couve)     := FALSE;
+        next(barqueiro) := !barqueiro;
+        next(lobo)      := thing = l & barqueiro = lobo   ? !lobo   : lobo;
+        next(ovelha)    := thing = o & barqueiro = ovelha ? !ovelha : ovelha;
+        next(couve)     := thing = c & barqueiro = couve  ? !couve  : couve;
+DEFINE
+        bad := (lobo = ovelha & lobo != barqueiro) | (ovelha = couve & couve != barqueiro);
+INVAR
+        !bad
+TRANS
+        thing = l -> lobo = barqueiro &
+        thing = o -> ovelha = barqueiro &
+        thing = c -> couve = barqueiro
+\end{lstlisting}
+
+We will encode the same problem using mCRL2's process algebra.
+This algebra focus on \emph{actions} rather than \emph{state}, making it less optimal for this particular problem.
+However, it will help clarifying the key differences between a state-based approach and an action-based approach to model.
+We start with a simplified (but incomplete) version \bash{barqueiro1.mcrl2} below.
+
+\begin{lstlisting}
+%% file: barqueiro1.mcrl2
+act
+  ld,le,od,oe,cd,ce,                   % acções pelos passageiros
+  bld,bod,bcd,barqd,ble,boe,bce,barqe, % acções pelo barqueiro
+  lobod,loboe,oveld,ovele,couvd,couve, % acções pelo sistema
+  winl,wino,winc,win;                  % acções para detectar vitória
+
+proc
+  Lobo = ld.(le+winl).Lobo ;
+  Ovel = od.(oe+wino).Ovel ;
+  Couv = cd.(ce+winc).Couv ;
+  Barq = (bld+bod+bcd+barqd).(ble+boe+bce+barqe).Barq ;
+
+init
+  allow(
+    { lobod,loboe,oveld,ovele,couvd,couve,barqe,barqd,win },
+  comm(
+    { ld|bld -> lobod, le|ble -> loboe, 
+      od|bod -> oveld, oe|boe -> ovele, 
+      cd|bcd -> couvd, ce|bce -> couve,
+      winl|wino|winc|barqe -> win
+    },
+    Lobo || Ovel || Couv || Barq
+  ));
+\end{lstlisting}  
+
+The specification is split into three sections:
+\code{act}, a declaration of 24 actions,
+\code{proc}, the definition of 4 processes, and
+\code{init}, the initialisation of the system.
+
+
+\subex{
+Produce the labelled transition system (LTS) of this mCRL2 specification using (1) \bash{mcrl22lps} to linearise the system and (2) \bash{lps2lts} to produce the final LTS.
+Finally, visualise the resulting LTS with \bash{ltsgraph} and
+\textbf{show a screenshot of the LTS (make sure it is understandable).}
+}
+
+\subex{
+This specification is not complete yet, i.e., it does not fully model the original SMV specification.
+\textbf{Explain informally why this specification is not complete}, by explaining what is being modelled and what is still missing.
+}
+
+\subex{By omitting the restrictions \code{allow} and \code{comm} \textbf{would you obtain more or less states} than with the original specification? \textbf{Why?}
+}
+
+\end{exercise}
+
+%----------------------------------------------
+\begin{exercise} \label{ex:ba2}
+We now present a new specification for the same problem consisting of a single process \code{Estado} that keeps the state information.
+This new specification includes more advanced features of mCRL2, including:
+a data structure, actions with data parameters, processes have parameters, and user defined functions \code[morekeywords={inv}]{inv} and \code[morekeywords={ok}]{ok}.
+
+\begin{lstlisting}[morekeywords={ok,inv}]
+%% file: barqueiro2.mcrl2
+sort
+  Posicao = struct esq | dir;
+map
+  inv : Posicao -> Posicao ;
+  ok  : Posicao # Posicao # Posicao # Posicao -> Bool ;
+var
+  b,l,o,c: Posicao;
+eqn
+  inv(esq) = dir ;
+  inv(dir) = esq ;
+  ok(b,l,o,c) = %% (1) %%;
+
+act
+  lobo,ovel,couv,barq : Posicao; % acções do sistema, parameterisadas na posição
+  win;                           % acção para detectar vitória
+proc
+  Estado(b:Posicao,l:Posicao,o:Posicao,c:Posicao) = % (barqueiro,lobo,ovelha,couve)
+     ((b==l && ok(inv(b),inv(l),o,c)) -> lobo(inv(l)).Estado(inv(b),inv(l),o,c))
+   + ((b==o && ok(inv(b),l,inv(o),c)) -> ovel(inv(o)).Estado(inv(b),l,inv(o),c))
+   + ((b==c && ok(inv(b),l,o,inv(c))) -> couv(inv(c)).Estado(inv(b),l,o,inv(c)))
+   + (         ok(inv(b),l,o,c)       -> barq(inv(b)).Estado(inv(b),l,o,c))
+   + ((b==dir && l==dir && o==dir && c==dir)   -> win.Estado(esq,esq,esq,esq));
+init
+  Estado(esq,esq,esq,esq);
+\end{lstlisting}
+
+
+\subex{This new specification has a hole in the definition of \code[morekeywords={ok}]{ok}, marked with \code{\%\% (1) \%\%}.
+Extend the given mCRL2 definition by replacing this hole with the code that describes the desired state invariant and save the resulting specification as \bash{barqueiro2.mcrl2}.
+\textbf{Show your new definition of the function \code[morekeywords={ok}]{ok}.}
+}
+
+\subex{\label{ex:ba3}
+Without modifying the process \code{Estado}, adapt the specification by adding a new process \code{Contador(n:Nat)} that runs in parallel with \code{Estado(esq,esq,esq,esq)} and counts the number of traversals made by the boat. Save the resulting specification as \bash{barqueiro3.mcrl2} and \textbf{show your new specification}. (hint: it could be useful to use a bound for the \code{Contador)}, i.e., do not allow $n$ to be bigger than a certain number.)
+}
+\end{exercise}
+
+
+
+% --------------------------------------------------------------
+\section*{LTS Equivalence}
+
+
+\begin{exercise}  
+Recall the action-based \bash{barqueiro1.mcrl2} specification from Exercise~\ref{ex:ba1} and the state-based \bash{barqueiro2.mcrl2} specification from Exercise~\ref{ex:ba2}.
+
+
+\subex{Modify the initial process (\code{init}) of both \bash{barqueiro1.mcrl2} and \bash{barqueiro2.mcrl2} to {hide all allowed actions except \code{win}} (using \code{hide}), and save them as \bash{barqueiro1-tau.mcrl2} and \bash{barqueiro2-tau.mcrl2}, respectively.
+In \bash{barqueiro2-taus.mcrl2} {redefine the function \code[morekeywords={ok}]{ok}} by setting it to true, i.e., define \code[morekeywords={ok}]{ok(b,l,o,c)=true;}.
+\textbf{Show the resulting \code{init} block from each file.}
+}
+
+\subex{
+Generate the \bash{.lts} files corresponding to \bash{barqueiro1-tau.mcrl2} and \bash{barqueiro2-tau.mcrl2}, and compare them using strong bisimulation using the following command.
+\textbf{What can you conclude?}}
+
+\begin{lstlisting}[style=bash]
+$\texttt{\$}$ ltscompare --equivalence=bisim barqueiro1-taus.lts barqueiro2-taus.lts
+\end{lstlisting}
+
+
+\subex{
+Using \bash{ltsconvert}, minimise the LTS for \bash{barqueiro2-taus.mcrl2} with respect to branching bisimulation, using the command below.
+\textbf{Include a screenshot of the minimised LTS and describe what can we conclude from this LTS.}}
+
+\begin{lstlisting}[style=bash]
+$\texttt{\$}$ ltsconvert --equivalence=branching-bisim barqueiro2-taus.lts
+\end{lstlisting}
+
+
+\end{exercise}
+
+
+% --------------------------------------------------------------
+\section*{Verification of the wolf-sheep-cabbage problem}
+
+\begin{exercise}
+Recall the LTSs from Exercise~\ref{ex:ba1} and Exercise~\ref{ex:ba2} (after completing Exercise~\ref{ex:ba2}.1.
+You will now verify properties of these systems.
+In mCRL2, a property can be written in a text file \bash{prop.mcf}, and verified against a system \bash{system.mcrl2} using the following two commands.
+
+\begin{lstlisting}[style=bash]
+$\texttt{\$}$ mcrl22lps system.mcrl2 system.lps
+$\texttt{\$}$ lps2pbes  system.lps -f prop.mcf system.pbes
+$\texttt{\$}$ pbes2bool system.pbes
+\end{lstlisting}
+
+
+\subex{\label{ex:ver1}
+What does the property ``\code{[true*]<ready>true}'' mean? Does it hold in any of these LTSs?}
+
+\subex{\label{ex:ver2}
+What does the property ``\code{[true*.lobo(dir).win]false}'' mean? Does it hold in \bash{barqueiro2.lts}?}
+
+\subex{\label{ex:ver3}
+Recall that \bash{barqueiro1.lts} is less complete than \bash{barqueiro2.lts}, because it fails to include some important invariants.
+\textbf{Write a property} that exemplifies an invariant that is fails in \bash{barqueiro1.lts} but succeeds in \bash{barqueiro2.lts}.
+Verify it using the mCRL2 toolset.
+}
+
+\subex{
+Consider now the extended system \bash{barqueiro3.mcrl2} produced in Exercise~\ref{ex:ba3}.
+In this example there is a an extra process called \code{Contador(n:Nat)}. Using this extra process, \textbf{define the following two properties}:
+\begin{enumerate}
+\item It is possible to win after exactly 7 moves.
+\item It is not possible to win in less than 7 moves.
+\end{enumerate}
+}
+\end{exercise}
+ 
+% --------------------------------------------------------------
+%     You don't have to mess with anything below this line.
+% --------------------------------------------------------------
+ 
+\end{document}

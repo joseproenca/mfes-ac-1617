@@ -1,0 +1,120 @@
+\documentclass[11pt]{article}
+
+\input{tp-macros}
+\date{Arquitectura e C\'alculo -- 2015/2016}
+
+\begin{document}
+ 
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+ 
+\title{Assignment 2: Modelling with time}
+\author{Jos\'{e} Proen\c{c}a}
+%\\
+%Arquitectura e C\'alculo -- 2015/2016} 
+ 
+\maketitle
+
+\myparagraph{To do:}  ...
+% Develop Uppaal models as requested, and write a report using LaTeX. This report should include screenshots of the requested time automata and properties that you verify, and an explanation of the architectural scenario used for Exercise 3.
+
+\myparagraph{To submit:} ...
+% The \emph{report} in PDF \textbf{and} the developed \emph{Uppaal models}. Send by email a unique zip file ``\bash{ac2-N.zip}'', where \bash{N} is your group number.
+
+\myparagraph{To demo:} ...
+% The result of Exercise 3.
+
+\myparagraph{Deadline part I:} 27 Apr 2017 @ 14h (Thursday)
+
+\myparagraph{Deadline part II:} 31 May 2017 @ 23h59 (Wednesday)
+ 
+\section*{Part I - Real time}
+
+%The train gate example is distributed with Uppaal. It is a railway control system which
+% - controls access to a bridge for several trains.
+%
+%BRIDGE: a critical shared resource that may be accessed only by one train at a time.
+%SYSTEM: a number of trains (assume 4 for this example) + a controller.
+%
+%TRAIN: sends approach, waits 10 secs for stop! signal,
+% - not stopped: after 10 more it reaches the gate/bridge;
+% - stopped: waits for a go! signal - takes 7-15 sec to reach the cross after go!.
+% - sends a leave! signal after passing.
+% - after reaching the cross - 3-5 sec to cross.
+% (5 locations: Safe, Appr-oaching, Stop-ping, Start-ting, and Cross-sing)
+%
+%GATE: syncs with queue/contr and trains
+% - Can be free or occupied,
+% - starts Free, becomes Occupied
+%CONTROLER/QUEUE: (not for 2 trains)
+%
+%Start has the invariant x <= 15 and its outgoing transition has the constraint x >= 7
+%
+%A train can not be stopped instantly and restarting also takes time. Therefor, there are timing constraints on the trains before entering the bridge. When approaching, a train sends a appr! signal. Thereafter, it has 10 time units to receive a stop signal. This allows it to stop safely before the bridge. After these 10 time units, it takes further 10 time units to reach the bridge if the train is not stopped. If a train is stopped, it resumes its course when the controller sends a go! signal to it after a previous train has left the bridge and sent a leave! signal.
+
+%-----------------------------------------------------------------------------
+%\begin{exercise} \label{ex:train}
+%\textbf{[Train bridge]}
+%Consider a train bridge over a river shared by multiple trains. In this exercise we will consider only 2 trains. Only one train can cross the bridge at a time - a \emph{gate} controls who is allowed to cross the bridge at a given time. The desired model of the train bridge has the following extra requirements:
+%%
+%\begin{itemize}
+%  \item a Train notifies the Gate when it approaches the bridge;
+%  \item the Gate has 10 time units to notify the Train to stop (if another train is crossing the bridge);
+%  \item if the Gate does not send a stop notification within 10 time units, the Train must reach the bridge in another 10 time units;
+%  \item each Train takes between 3 and 5 time units to cross the bridge -- after that it sends a notification to the Gate that it is leaving;
+%  \item if a Train is told to stop, we assume it will take between 7 and 15 time units to reach the bridge;
+%\end{itemize}
+%\end{exercise}
+
+\begin{exercise} \label{ex:airfield}
+\textbf{[Kobuki robot]}
+Use the paper ...
+\subex{Model 2 publishers, a priority queue, and a subscriber, taking into account the following restrictions.
+\begin{itemize}
+  \item ...
+\end{itemize}
+}
+
+\subex{Suggest a small modification to your model \textbf{with a timelock}, and another modification \textbf{with zeno behaviour}. Explain.}
+
+\subex{Express a property using UPPAAL's CTL for each of the following items.
+\begin{itemize}
+  \item $\phi_1$ -- the queue of the first publisher cannot overflow;
+  \item $\phi_2$ -- the queue of the subscriber cannot overflow;
+  \item $\phi_3$ -- Every message sent by the 2$^{nd}$ publisher must be received within $N$ time units.
+\end{itemize}
+}
+
+\subex{For each property, find parameters (...),$N$ that satisfy and that reject them.}
+\end{exercise}
+
+
+\section*{Part II - Coordination}
+
+%----------------------------------------------
+\begin{exercise} \label{ex:vm2}
+\textbf{[Reo Kobuki]}
+The 4 components could be modelled in Reo using the following connector.
+
+\[ (... diagram ...) \]
+
+\subex{Propose a different connector, using the primitives (...), that (...).}
+
+\subex{Use the mCRL2 toolset to visualise the LTS with the behaviour of both connectors, including the actions (...)} 
+\end{exercise}
+
+\subex{Write 2 desired properties in mCRL2 that hold in your proposed connector.}
+
+
+% --------------------------------------------------------------
+\section*{Demo}
+
+\begin{exercise}  
+Present your UPPAAL and Reo models, discuss your design choices, and show desired properties that hold and properties that do not hold.
+If possible, show variations of your models and explain advantages and disadvantages.
+\end{exercise}
+
+
+ 
+\end{document}
